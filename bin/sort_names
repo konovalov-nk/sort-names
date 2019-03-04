@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require "sort_names"
+require "slop"
+
+def bail(err, opts)
+  puts err
+  puts
+  puts opts
+  exit(1)
+end
+
+begin
+  o = Slop::Options.new
+  o.string '-i', '--input', 'name of the input file', default: 'input.txt'
+  o.string '-o', '--output', 'name of the results output file', default: 'final.txt'
+  o.string '-m', '--max-names',
+           'the maximum number of names which can be loaded into memory at any given time',
+           default: 10
+  o.on '--version', 'print the version' do
+    puts SortNames::VERSION
+    exit
+  end
+  o.on '--help' do
+    puts o
+    puts "\nFor example: bin/sort_names -i input.txt -o output.txt -m 10"
+    exit
+  end
+  opts = Slop::Parser.new(o).parse(ARGV)
+
+  if !opts[:i] || !File.exist?(opts[:i])
+    bail "Error: please provide a file for input", opts
+  end
+  SortNames.run(opts)
+
+rescue
+  bail "Error: #{$!}", o
+end
